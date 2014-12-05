@@ -13,7 +13,7 @@ app.all('*',function(req,res,next){
 .get('/result',function(req,res){
 	res.sendfile('./fichiers/result.html');
 }).listen(serverPort,serverIpAddress,function(){
-	console.log(heure()+'Running, listeing on '+serverIpAddress+', port '+serverPort);
+	console.log(heure()+'Running, listening on '+serverIpAddress+', port '+serverPort);
 })
 function heure(){
 	var semaine=['Sun','Mon','Tue','Wed','Thi','Fri','Sat'],
