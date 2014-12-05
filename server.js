@@ -1,7 +1,7 @@
 var express=require('express'),
-	app=express(),
 	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
-	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1';
+	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
+	app=express();
 app.all('*',function(req,res,next){
 	console.log(heure()+req.method+req.path);
 	next();
@@ -14,7 +14,7 @@ app.all('*',function(req,res,next){
 	res.sendfile('./fichiers/result.html');
 }).listen(serverPort,serverIpAddress,function(){
 	console.log(heure()+'Running, listeing on '+serverIpAddress+', port '+serverPort);
-});
+})
 function heure(){
 	var semaine=['Sun','Mon','Tue','Wed','Thi','Fri','Sat'],
 		date=new Date(),
