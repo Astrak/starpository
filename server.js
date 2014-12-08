@@ -12,15 +12,12 @@ app.all('*',function(req,res,next){
 	next();
 })
 .use(express.static(__dirname+'/fichiers'));
-/*.listen(serverPort,serverIpAddress,function(){
-	console.log(heure()+'Running, listening on '+serverIpAddress+', port '+serverPort);
-})*/
 io.on('connection',function(socket){
 	console.log('nouveau joueur !!!!!!!!');
 	socket.on('spawn',function(socket){
 		console.log('player has spawn at '+socket.x)
 	})
-})
+});
 function heure(){
 	var semaine=['Sun','Mon','Tue','Wed','Thi','Fri','Sat'],
 		date=new Date(),
