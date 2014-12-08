@@ -7,6 +7,8 @@
 	"main":"server.js",
 	"scripts":{"start":"node server.js"},
 	"dependencies":{
-		"express":"latest"
+		"express":"latest",
+		"socket.io":"latest",
+		"express.io":"latest"
 	}
 }

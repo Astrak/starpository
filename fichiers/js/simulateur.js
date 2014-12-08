@@ -1,9 +1,11 @@
+var socket=io.connect();
+
 onload=function(){
 	var init=function(){
 		var scene=new THREE.Scene(),ship,
 			wrapper=new THREE.Object3D(),
 			renderer=new THREE.WebGLRenderer(),
-			camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,9,1000),
+			camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,1,1000),
 			controls=new THREE.SimulatorControls(renderer,ship,camera),
 			pL=new THREE.PointLight(0xffffff,4,100),
 			mat=new THREE.MeshLambertMaterial({color:0xff0000}),
@@ -27,6 +29,7 @@ onload=function(){
 		render();
 		renderer.setSize(innerWidth,innerHeight);
 		document.body.appendChild(renderer.domElement);
+		socket.emit('spawn',{x:scene.position.x})
 	};
 	var button=document.createElement('button');
 	button.innerHTML='INIT';

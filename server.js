@@ -1,19 +1,25 @@
 var express=require('express'),
 	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
 	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
-	app=express();
+	app=express(),
+	server=require('http').Server(app),
+	io=require('socket.io')(server);
+server.listen(serverPort,serverIpAddress,function(){
+	console.log(heure()+'Running, listening on '+serverIpAddress+', port '+serverPort);
+});
 app.all('*',function(req,res,next){
 	console.log(heure()+req.method+req.path);
 	next();
 })
-.use(express.static(__dirname+'/fichiers'))
-.get('/index',function(req,res){
-	res.sendfile('./fichiers/index.html');
-})
-.get('/result',function(req,res){
-	res.sendfile('./fichiers/result.html');
-}).listen(serverPort,serverIpAddress,function(){
+.use(express.static(__dirname+'/fichiers'));
+/*.listen(serverPort,serverIpAddress,function(){
 	console.log(heure()+'Running, listening on '+serverIpAddress+', port '+serverPort);
+})*/
+io.on('connection',function(socket){
+	console.log('nouveau joueur !!!!!!!!');
+	socket.on('spawn',function(socket){
+		console.log('player has spawn at '+socket.x)
+	})
 })
 function heure(){
 	var semaine=['Sun','Mon','Tue','Wed','Thi','Fri','Sat'],
