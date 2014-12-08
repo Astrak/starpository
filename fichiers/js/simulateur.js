@@ -1,4 +1,4 @@
-var socket=io.connect();
+var socket=io.connect("http://starpot-starpot.rhcloud.com:8000");
 
 onload=function(){
 	var init=function(){
