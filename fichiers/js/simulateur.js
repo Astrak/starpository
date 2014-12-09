@@ -1,25 +1,51 @@
-var socket=io.connect("http://starpot-starpot.rhcloud.com:8000");
+var socket=io.connect(/*"http://starpot-starpot.rhcloud.com:8000"*/),
+	socketId,
+	otherPlayers=[];
 
 onload=function(){
-	var init=function(){
+	var init=function(players){
 		var scene=new THREE.Scene(),ship,
 			wrapper=new THREE.Object3D(),
 			renderer=new THREE.WebGLRenderer(),
-			camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,1,1000),
+			camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,6,2500),
 			controls=new THREE.SimulatorControls(renderer,ship,camera),
-			pL=new THREE.PointLight(0xffffff,4,100),
+			pL=new THREE.PointLight(0xffffff,4,100000),
 			mat=new THREE.MeshLambertMaterial({color:0xff0000}),
 			box=new THREE.Mesh(new THREE.BoxGeometry(10,10,10),mat),
+			skybox=new THREE.Mesh(new THREE.SphereGeometry(100,20,20),new THREE.MeshLambertMaterial({
+				map:THREE.ImageUtils.loadTexture('img/mw_mr.jpg'),
+				color:0x000000,
+				emissive:0xbbbbbb,
+				depthWrite:false,
+				side:THREE.BackSide
+			})),
 			JSON=new THREE.JSONLoader(),
 			box2=new THREE.Mesh(new THREE.BoxGeometry(5,5,5),new THREE.MeshLambertMaterial({color:0x00ff00}));
 		JSON.load('js/JSON/TIE.js',function(geometry){
 			ship=new THREE.Mesh(geometry,new THREE.MeshLambertMaterial({color:0xffffff}));
-			scene.add(ship)});
+				scene.add(ship);
+			setInterval(function(){
+				socket.emit('report',{
+					id:socketId,
+					position:{
+						x:-wrapper.position.x,
+						y:-wrapper.position.y,
+						z:-wrapper.position.z,
+					},
+					quaternion:{
+						x:ship.quaternion.x,
+						y:ship.quaternion.y,
+						z:ship.quaternion.z,
+						w:ship.quaternion.w
+					}
+				});
+			},30);
+		});
 		pL.position.set(10,20,0);
 		box.position.z=-10;
 		box2.position.x=-20;
 		camera.position.z=10;
-		scene.add(camera,wrapper);
+		scene.add(camera,wrapper,skybox);
 		wrapper.add(box,box2,pL);
 		function render(){
 			controls.update(ship,wrapper);
@@ -29,12 +55,64 @@ onload=function(){
 		render();
 		renderer.setSize(innerWidth,innerHeight);
 		document.body.appendChild(renderer.domElement);
-		socket.emit('spawn',{x:scene.position.x})
+		socket.on('update',function(players){
+			if(typeof ship!=='undefined'){
+				if(players.length>otherPlayers.length+1){
+					otherPlayers.push(new THREE.Mesh(
+						ship.geometry.clone(),
+						ship.material.clone()));
+					if(players[players.length-1].id===socketId){
+						otherPlayers[otherPlayers.length-1].userData.id=players[players.length-2].id;
+					}else{
+						otherPlayers[otherPlayers.length-1].userData.id=players[players.length-1].id;
+					}
+					wrapper.add(otherPlayers[otherPlayers.length-1]);
+				}
+				for(var i=0;i<players.length;i++){
+					if(players[i].id!==socketId){
+						for(var j=0;j<otherPlayers.length;j++){
+							if(otherPlayers[j].userData.id!==players[i].id){
+								continue
+							}else{
+							otherPlayers[j].position.set(
+								players[i].position.x,
+								players[i].position.y,
+								players[i].position.z);
+							otherPlayers[j].quaternion.set(
+								players[i].quaternion.x,
+								players[i].quaternion.y,
+								players[i].quaternion.z,
+								players[i].quaternion.w)
+							}
+						}
+					}
+				}
+			}
+		});
+		socket.on('leaving',function(leaver){
+			for(var i=0;i<otherPlayers.length;i++){
+				if(otherPlayers[i].userData.id===leaver){
+					wrapper.remove(otherPlayers[i]);
+					otherPlayers.splice(i,1);
+					break
+				}
+			}
+		});
 	};
 	var button=document.createElement('button');
 	button.innerHTML='INIT';
 	document.body.appendChild(button);
-	button.addEventListener('mousedown',init,false);
+	button.addEventListener('click',function(){
+		socket.emit('wantspawn');
+		document.body.removeChild(button);
+		document.body.removeChild(document.querySelector('h1'));
+	},false);
+	socket.on('newplayer',function(players){
+		if(typeof socketId==='undefined'){
+			socketId=players[players.length-1].id;
+			init(players);
+		}
+	});
 }
 THREE.SimulatorControls=function(renderer,ship,camera){
 	var key=[],lmb,mmb,rmb,
@@ -48,6 +126,9 @@ THREE.SimulatorControls=function(renderer,ship,camera){
 		raycaster=new THREE.Raycaster();
 	this.update=function(ship,wrapper){
 		if(typeof ship!=='undefined'){
+			/*SERVER UPDATE AND CLIENT GUESSING*/
+			
+			/*CLIENT UPDATE*/
 			raycaster.set(ship.position,new THREE.Vector3().subVectors(ship.position,camera.position).normalize());
 			raycaster.far=1;
 			var boom=raycaster.intersectObject(wrapper,true);

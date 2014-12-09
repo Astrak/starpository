@@ -9,6 +9,5 @@
 	"dependencies":{
 		"express":"latest",
 		"socket.io":"latest",
-		"express.io":"latest"
 	}
 }
