@@ -1,4 +1,4 @@
-var socket=io.connect(/*"http://starpot-starpot.rhcloud.com:8000"*/),
+var socket=io.connect("http://starpot-starpot.rhcloud.com:8000"),
 	socketId,
 	otherPlayers=[];
 
@@ -10,8 +10,7 @@ onload=function(){
 			camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,6,2500),
 			controls=new THREE.SimulatorControls(renderer,ship,camera),
 			pL=new THREE.PointLight(0xffffff,4,100000),
-			mat=new THREE.MeshLambertMaterial({color:0xff0000}),
-			box=new THREE.Mesh(new THREE.BoxGeometry(10,10,10),mat),
+			box=new THREE.Mesh(new THREE.BoxGeometry(10,10,10),new THREE.MeshLambertMaterial({color:0xff0000})),
 			skybox=new THREE.Mesh(new THREE.SphereGeometry(100,20,20),new THREE.MeshLambertMaterial({
 				map:THREE.ImageUtils.loadTexture('img/mw_mr.jpg'),
 				color:0x000000,

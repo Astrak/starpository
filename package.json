@@ -8,6 +8,7 @@
 	"scripts":{"start":"node server.js"},
 	"dependencies":{
 		"express":"latest",
-		"socket.io":"latest",
+		"socket.io":"latest"/*,
+		"three.js":"latest"*/
 	}
 }
