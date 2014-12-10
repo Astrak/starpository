@@ -1,10 +1,5 @@
 Array.prototype.clean=function(deleteValue){
-  for (var i=0;i<this.length; i++) {
-    if (this[i].id==deleteValue) {         
-      this.splice(i,1);
-      i--
-    }
-  }
+  for(var i=0;i<this.length;i++){if(this[i].id==deleteValue){this.splice(i,1);i--}}
   return this;
 };
 var express=require('express'),
@@ -14,73 +9,60 @@ var express=require('express'),
 	io=require('socket.io')(server),
 	sql=require('mysql'),
 	mySqlClient=sql.createConnection({
-		host:process.env.OPENSHIFT_MYSQL_DB_HOST || 'localhost',
-      	port: process.env.OPENSHIFT_MYSQL_DB_PORT || '3306',
-		user:process.env.OPENSHIFT_MYSQL_DB_USERNAME || 'adminjHtbzSB',
-		password:process.env.OPENSHIFT_MYSQL_DB_PASSWORD || '59naStIcvMym',
+		host:OPENSHIFT_MYSQL_DB_HOST,//'localhost',
+      	port:OPENSHIFT_MYSQL_DB_PORT,//'3306',
+		user:OPENSHIFT_MYSQL_DB_USERNAME,//'root',
+		password:OPENSHIFT_MYSQL_DB_USERNAME,//'root',
 		database:'starpot',
 		charset:'utf8'
 	}),
 	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
 	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
 	players=[];
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 })); 
+
+/**** SERVER ****/
 server.listen(serverPort,serverIpAddress,function(){
 	console.log(heure()+'Running, listening on '+serverIpAddress+', port '+serverPort);
 });
+
+/**** CONSOLE DEV INFOS ****/
 app.all('*',function(req,res,next){
 	console.log(heure()+req.method+req.path);
 	next();
 })
+
+/**** MYSQL ****/
 .post('/connect',function(req,res){
-	var action=req.body.action,
-		pseudo=req.body.pseudo,
-		mail=req.body.mail,
-		password=req.body.password;
-	//todo : check inputs
-	if(action.value='subscription'){
-		var query='INSERT INTO ACCOUNTS (mail,name,password) VALUES ('+mail+','+pseudo+','+password+');',
-			sqlQuery=mySqlClient.query(query);
-		sqlQuery.on('result',function(row){
-			res.end(row);
-		});
-		sqlQuery.on('end',function(row){
-			mySqlClient.end();
-		});
-		sqlQuery.on('error',function(error){
+	if (req.body.action==='Subscription'){
+		var post={name:req.body.pseudo,password:req.body.password,mail:req.body.mail};
+		mySqlClient.query('INSERT INTO ACCOUNTS SET ?',post,function(err,result){
+			err!=='null'?res.send('subscription success'):err;
+			console.log(err+result);
 		});
 	}else{
-		var query='SELECT NAME,PASSWORD FROM ACCOUNTS WHERE name='+pseudo+' AND PASSWORD='+password+';',
-			sqlQuery=mySqlClient.query(query);
-		sqlQuery.on('result',function(row){
-			res.end(row);
-		});
-		sqlQuery.on('end',function(row){
-			mySqlClient.end();
-		});
-		sqlQuery.on('error',function(error){
+		var query='SELECT NAME,PASSWORD FROM ACCOUNTS WHERE NAME="'+req.body.pseudo+'" AND PASSWORD="'+req.body.password+'";';
+		mySqlClient.query(query,function(err,result){
+			err!=='null'?res.send('connexion success'):err;
+			console.log(err + result);
 		});
 	}
 })
+
+/**** ROUTER ****/
 .use(express.static(__dirname+'/fichiers'));
+
+/**** SOCKETS ****/
 io.on('connection',function(socket){
 	socket.on('wantspawn',function(){
 		players.push({
 			id:socket.id,
-			position:{
-				x:0,
-				y:0,
-				z:0
-			},
-			quaternion:{
-				x:0,
-				y:0,
-				z:0,
-				w:0
-			}
+			position:{x:0,y:0,z:0},
+			quaternion:{x:0,y:0,z:0,w:0}
 		});
 		socket.emit('newplayer',players)
 	});//wantspawn
@@ -101,6 +83,7 @@ io.on('connection',function(socket){
 		socket.broadcast.emit('leaving',socket.id);
 	});//disconnect
 });
+
 function heure(){
 	var semaine=['Sun','Mon','Tue','Wed','Thi','Fri','Sat'],
 		date=new Date(),
