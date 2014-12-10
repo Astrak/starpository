@@ -8,18 +8,62 @@ Array.prototype.clean=function(deleteValue){
   return this;
 };
 var express=require('express'),
-	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
-	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
 	app=express(),
+	bodyParser=require('body-parser'),
 	server=require('http').Server(app),
 	io=require('socket.io')(server),
+	sql=require('mysql'),
+	mySqlClient=sql.createConnection({
+		host:process.env.OPENSHIFT_MYSQL_DB_HOST || 'localhost',
+      	port: process.env.OPENSHIFT_MYSQL_DB_PORT || '3306',
+		user:process.env.OPENSHIFT_MYSQL_DB_USERNAME || 'adminjHtbzSB',
+		password:process.env.OPENSHIFT_MYSQL_DB_PASSWORD || '59naStIcvMym',
+		database:'starpot',
+		charset:'utf8'
+	}),
+	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
+	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
 	players=[];
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+})); 
 server.listen(serverPort,serverIpAddress,function(){
 	console.log(heure()+'Running, listening on '+serverIpAddress+', port '+serverPort);
 });
 app.all('*',function(req,res,next){
 	console.log(heure()+req.method+req.path);
 	next();
+})
+.post('/connect',function(req,res){
+	var action=req.body.action,
+		pseudo=req.body.pseudo,
+		mail=req.body.mail,
+		password=req.body.password;
+	//todo : check inputs
+	if(action.value='subscription'){
+		var query='INSERT INTO ACCOUNTS (mail,name,password) VALUES ('+mail+','+pseudo+','+password+');',
+			sqlQuery=mySqlClient.query(query);
+		sqlQuery.on('result',function(row){
+			res.end(row);
+		});
+		sqlQuery.on('end',function(row){
+			mySqlClient.end();
+		});
+		sqlQuery.on('error',function(error){
+		});
+	}else{
+		var query='SELECT NAME,PASSWORD FROM ACCOUNTS WHERE name='+pseudo+' AND PASSWORD='+password+';',
+			sqlQuery=mySqlClient.query(query);
+		sqlQuery.on('result',function(row){
+			res.end(row);
+		});
+		sqlQuery.on('end',function(row){
+			mySqlClient.end();
+		});
+		sqlQuery.on('error',function(error){
+		});
+	}
 })
 .use(express.static(__dirname+'/fichiers'));
 io.on('connection',function(socket){

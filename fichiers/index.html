@@ -1,13 +1,38 @@
-<!doctype html>
-<html style=overflow:hidden>
-	<head>
-		<title>StarPot</title>
-		<meta charset=utf-8>
-	</head>
-	<body style=margin:0>
+<!DOCTYPE html>
+<html lang=FR-fr>
+
+<head>
+<title>Starpot</title>
+<meta charset=utf-8 />
+</head>
+
+<body>
+	<header>
 		<h1>Starpot</h1>
-		<script src=https://cdn.socket.io/socket.io-1.2.0.js></script>
-		<script src=js/lib/three.min.js></script>
-		<script src=js/simulateur.js></script>
-	</body>
+	</header>
+	<nav>
+		<form method=post action=/connect>
+			<label for=mail>Mail</label><input name=mail type=text autofocus required></input><br/>
+			<label for=pseudo>Name</label><input name=pseudo type=text autofocus required></input><br/>
+			<label for=password>Password</label><input name=password type=password required></input><br/>
+			<input type=submit name=action value=Connexion /><input type=submit value=Subscription name=action />
+		</form>
+		<h2>lien1</h2>
+		<h2>lien2</h2>
+		<h2>lien3</h2>
+	</nav>
+	<div id=top>
+		
+	</div>
+	<div id=main>
+		<article>
+			<h3>News</h3>
+			<p>Les news</p>
+		</article>
+	</div>
+	<footer>
+		<p>Starpot v0.0.2 serveur dev</p>
+	</footer>
+	<script type=text/javascript></script>
+</body>
 </html>
