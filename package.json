@@ -1,6 +1,6 @@
 {
 	"name":"starpotServer",
-	"version":"v0.0.1",
+	"version":"v0.0.2",
 	"description":"futur great game",
 	"keywords":["server","game","star"],
 	"author":"Astrak <coffre.a@gmail.com>",
@@ -8,7 +8,7 @@
 	"scripts":{"start":"node server.js"},
 	"dependencies":{
 		"express":"latest",
-		"socket.io":"latest"/*,
-		"three.js":"latest"*/
+		"socket.io":"latest",
+		"mysql":"latest"
 	}
 }

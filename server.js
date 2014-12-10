@@ -11,7 +11,6 @@ var express=require('express'),
 	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
 	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
 	app=express(),
-	//THREE=require('three'),
 	server=require('http').Server(app),
 	io=require('socket.io')(server),
 	players=[];

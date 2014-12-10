@@ -11,7 +11,7 @@ onload=function(){
 			controls=new THREE.SimulatorControls(renderer,ship,camera),
 			pL=new THREE.PointLight(0xffffff,4,100000),
 			box=new THREE.Mesh(new THREE.BoxGeometry(10,10,10),new THREE.MeshLambertMaterial({color:0xff0000})),
-			skybox=new THREE.Mesh(new THREE.SphereGeometry(100,20,20),new THREE.MeshLambertMaterial({
+			skybox=new THREE.Mesh(new THREE.SphereGeometry(100,5,5),new THREE.MeshLambertMaterial({
 				map:THREE.ImageUtils.loadTexture('img/mw_mr.jpg'),
 				color:0x000000,
 				emissive:0xbbbbbb,
@@ -44,8 +44,8 @@ onload=function(){
 		box.position.z=-10;
 		box2.position.x=-20;
 		camera.position.z=10;
-		scene.add(camera,wrapper,skybox);
 		wrapper.add(box,box2,pL);
+		scene.add(camera,wrapper,skybox);
 		function render(){
 			controls.update(ship,wrapper);
 			requestAnimationFrame(render);
