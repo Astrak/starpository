@@ -9,7 +9,7 @@ var express=require('express'),
 	io=require('socket.io')(server),
 	sql=require('mysql'),
 	mySqlClient=sql.createConnection({
-		host:process.env.OPENSHIFT_MYSQL_DB_HOST||'localhost',
+		host:process.env.OPENSHIFT_MYSQL_DB_HOST||'127.0.0.1',
       	port:process.env.OPENSHIFT_MYSQL_DB_PORT||'3306',
 		user:process.env.OPENSHIFT_MYSQL_DB_USERNAME||'root',
 		password:process.env.OPENSHIFT_MYSQL_DB_PASSWORD||'root',
@@ -17,7 +17,7 @@ var express=require('express'),
 		charset:'utf8'
 	}),
 	serverPort=process.env.OPENSHIFT_NODEJS_PORT||8080,
-	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'127.0.0.1',
+	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'localhost',
 	players=[];
 
 app.use(bodyParser.json());
@@ -38,17 +38,15 @@ app.all('*',function(req,res,next){
 
 /**** MYSQL ****/
 .post('/connect',function(req,res){
-	if (req.body.action==='Subscription'){
-		var post={name:req.body.pseudo,password:req.body.password,mail:req.body.mail};
-		mySqlClient.query('INSERT INTO accounts SET ?',post,function(err,result){
-			err===null?res.send('subscription success'):res.send(err);
-			console.log(err+result);
-		});
-	}else{
+	if (req.body.action==='Connexion'){
 		var query='SELECT NAME,PASSWORD FROM accounts WHERE NAME="'+req.body.pseudo+'" AND PASSWORD="'+req.body.password+'";';
 		mySqlClient.query(query,function(err,result){
-			err===null?res.send('connexion success'):res.send(err);
-			console.log(err + result);
+			err===null?res.send('connexion success'):res.send('connexion '+err);
+		});
+	}else{
+		var post={name:req.body.pseudo,password:req.body.password,mail:req.body.mail};
+		mySqlClient.query('INSERT INTO accounts SET ?',post,function(err,result){
+			err===null?res.send('subscription success'):res.send('subscription '+err);
 		});
 	}
 })

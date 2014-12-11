@@ -1,0 +1,46 @@
+*{	
+	padding:0px;
+	border:0px;
+	margin:5px;
+	font:20px Arial;
+	text-align:center;
+}
+html{
+	overflow:hidden;
+}
+canvas{
+	position:absolute;
+}
+form{
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:120px;
+	padding:10px;
+	background-color:#333;
+	border-radius:5px;
+	width:230px;
+}
+form p{
+	text-decoration:underline;
+	cursor:pointer;
+}
+input{
+	background-color:#777;
+	padding:10px;
+	border-radius:5px;
+	border:none;
+	width:70%;
+}
+input[type="submit"]{
+	background-color:#349;
+	margin-top:20px;
+	padding:10px;
+	border-radius:5px;
+	border:none;
+	width:70%;
+	cursor:pointer;
+	transition:background-color 400ms ease;
+}
+input[type="submit"]:hover{
+	background-color:#888;
+}

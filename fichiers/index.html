@@ -4,35 +4,49 @@
 <head>
 <title>Starpot</title>
 <meta charset=utf-8 />
+<link rel=stylesheet href=style.css type=text/css />
 </head>
 
 <body>
-	<header>
-		<h1>Starpot</h1>
-	</header>
-	<nav>
-		<form method=post action=/connect>
-			<label for=mail>Mail</label><input name=mail type=text autofocus required></input><br/>
-			<label for=pseudo>Name</label><input name=pseudo type=text autofocus required></input><br/>
-			<label for=password>Password</label><input name=password type=password required></input><br/>
-			<input type=submit name=action value=Connexion /><input type=submit value=Subscription name=action />
-		</form>
-		<h2>lien1</h2>
-		<h2>lien2</h2>
-		<h2>lien3</h2>
-	</nav>
-	<div id=top>
-		
-	</div>
-	<div id=main>
-		<article>
-			<h3>News</h3>
-			<p>Les news</p>
-		</article>
-	</div>
+	<canvas></canvas>
+	<form method=post action=/connect>
+		<label for=pseudo>Name</label><input name=pseudo type=text autofocus required></input>
+		<label for=password>Password</label><input name=password type=password required></input>
+		<input type=submit name=action value=Connexion /><br/>
+		<p>or subscribe >></p>
+	</form>
 	<footer>
-		<p>Starpot v0.0.2 serveur dev</p>
+		<p>Starpot v0.0.2 dev server </p>
 	</footer>
-	<script type=text/javascript></script>
+	<script type=text/javascript>
+	var switchButton=document.querySelector('form p'),
+		mailInput=document.createElement('input'),
+		mailLabel=document.createElement('label'),
+		form=document.querySelector('form'),
+		submit=document.querySelector('input[type="submit"]'),
+		sub=false;
+	mailLabel.htmlFor='mail';
+	mailLabel.innerHTML='Mail';
+	mailInput.type='email';
+	mailInput.name='mail';
+	mailInput.required=true;
+	switchButton.addEventListener('click',function(){
+		if(!sub){
+			form.insertBefore(mailLabel,submit);
+			form.insertBefore(mailInput,submit);
+			submit.value='Subscribe';
+			switchButton.innerHTML='<< back to connexion';
+			submit.style.backgroundColor="#070";
+			sub=true;
+		}else{
+			form.removeChild(mailLabel);
+			form.removeChild(mailInput);
+			submit.value='Connexion';
+			submit.style.backgroundColor="#349";
+			sub=false;
+			switchButton.innerHTML='or subscribe >>';
+		}
+	},false);
+	</script>
 </body>
 </html>
