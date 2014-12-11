@@ -41,7 +41,19 @@ app.all('*',function(req,res,next){
 	if (req.body.action==='Connexion'){
 		var query='SELECT NAME,PASSWORD FROM accounts WHERE NAME="'+req.body.pseudo+'" AND PASSWORD="'+req.body.password+'";';
 		mySqlClient.query(query,function(err,result){
-			err===null?res.send('connexion success'):res.send('connexion '+err);
+			if(err===null){
+				if(result[0]){
+					if(result[0].PASSWORD===req.body.password){
+						res.send('success')
+					}else{
+						res.send('wrong pw')
+					}
+				}else{
+					res.send('not registered')
+				}
+			}else{
+				res.send(err)
+			}
 		});
 	}else{
 		var post={name:req.body.pseudo,password:req.body.password,mail:req.body.mail};

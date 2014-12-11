@@ -9,44 +9,72 @@
 
 <body>
 	<canvas></canvas>
-	<form method=post action=/connect>
-		<label for=pseudo>Name</label><input name=pseudo type=text autofocus required></input>
-		<label for=password>Password</label><input name=password type=password required></input>
-		<input type=submit name=action value=Connexion /><br/>
+	<form method=post action=/connect autocomplete=off>
+		<label for=pseudo>Name</label><input name=pseudo maxlength=10 type=text autofocus>
+		<label for=password>Password</label><input name=password maxlength=10 type=password>
+		<input type=submit name=action value=Connexion>
+		<img src=img/loader.gif />
 		<p>or subscribe >></p>
 	</form>
 	<footer>
 		<p>Starpot v0.0.2 dev server </p>
 	</footer>
 	<script type=text/javascript>
+	function getXMLHttpRequest(){
+		var xhr;
+		if(window.ActiveXObject){
+			try{xhr=new ActiveXObject("Msxml2.XMLHTTP")
+			}catch(e){xhr=new ActiveXObject("Microsoft.XMLHTTP")}
+		}else{xhr=new XMLHttpRequest()}
+		return xhr
+	}
 	var switchButton=document.querySelector('form p'),
 		mailInput=document.createElement('input'),
 		mailLabel=document.createElement('label'),
 		form=document.querySelector('form'),
 		submit=document.querySelector('input[type="submit"]'),
-		sub=false;
+		inputs=document.querySelectorAll('input'),
+		sub=false,
+		xhr=getXMLHttpRequest();
 	mailLabel.htmlFor='mail';
 	mailLabel.innerHTML='Mail';
 	mailInput.type='email';
 	mailInput.name='mail';
-	mailInput.required=true;
+	mailInput.maxLength='20';
 	switchButton.addEventListener('click',function(){
 		if(!sub){
 			form.insertBefore(mailLabel,submit);
 			form.insertBefore(mailInput,submit);
 			submit.value='Subscribe';
 			switchButton.innerHTML='<< back to connexion';
-			submit.style.backgroundColor="#070";
+			submit.style.backgroundColor="#0c0";
 			sub=true;
 		}else{
 			form.removeChild(mailLabel);
 			form.removeChild(mailInput);
 			submit.value='Connexion';
-			submit.style.backgroundColor="#349";
+			submit.style.backgroundColor="#35f";
 			sub=false;
 			switchButton.innerHTML='or subscribe >>';
 		}
 	},false);
+	submit.addEventListener('click',function(e){
+		e.preventDefault();
+		xhr.onreadystatechange=function(){
+			if(xhr.readyState==4&&(xhr.status==200||xhr.status==0)){
+				document.querySelector('form img').style.display='none';
+				var response=document.createTextNode(xhr.responseText);
+				form.insertBefore(response,form.lastChild);
+			}else if(xhr.readyState<4){
+				submit.style.display='none';
+				document.querySelector('form img').style.display='inline'
+			}
+		}
+		xhr.open('POST','/connect',false);
+		xhr.setRequestHeader("Content-Type","application/json;charset=UTF-8");
+		xhr.send(JSON.stringify({pseudo:inputs[0].value,password:inputs[1].value,mail:mailInput.value,action:submit.value}));
+
+	})
 	</script>
 </body>
 </html>
