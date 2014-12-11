@@ -12,7 +12,7 @@ var express=require('express'),
 		host:OPENSHIFT_MYSQL_DB_HOST,//'localhost',
       	port:OPENSHIFT_MYSQL_DB_PORT,//'3306',
 		user:OPENSHIFT_MYSQL_DB_USERNAME,//'root',
-		password:OPENSHIFT_MYSQL_DB_USERNAME,//'root',
+		password:OPENSHIFT_MYSQL_DB_PASSWORD,//'root',
 		database:'starpot',
 		charset:'utf8'
 	}),
