@@ -9,10 +9,14 @@ var express=require('express'),
 	io=require('socket.io')(server),
 	sql=require('mysql'),
 	mySqlClient=sql.createConnection({
-		host:process.env.OPENSHIFT_MYSQL_DB_HOST,//'localhost',
-      	port:process.env.OPENSHIFT_MYSQL_DB_PORT,//'3306',
-		user:process.env.OPENSHIFT_MYSQL_DB_USERNAME,//'root',
-		password:process.env.OPENSHIFT_MYSQL_DB_PASSWORD,//'root',
+		host:process.env.OPENSHIFT_MYSQL_DB_HOST,
+      	port:process.env.OPENSHIFT_MYSQL_DB_PORT,
+		user:process.env.OPENSHIFT_MYSQL_DB_USERNAME,
+		password:process.env.OPENSHIFT_MYSQL_DB_PASSWORD,
+		/*host:'localhost',
+      	port:'3306',
+		user:'root',
+		password:'root',*/
 		database:'starpot',
 		charset:'utf8'
 	}),
@@ -41,13 +45,13 @@ app.all('*',function(req,res,next){
 	if (req.body.action==='Subscription'){
 		var post={name:req.body.pseudo,password:req.body.password,mail:req.body.mail};
 		mySqlClient.query('INSERT INTO ACCOUNTS SET ?',post,function(err,result){
-			err!=='null'?res.send('subscription success'):err;
+			err===null?res.send('subscription success'):res.send(err);
 			console.log(err+result);
 		});
 	}else{
 		var query='SELECT NAME,PASSWORD FROM ACCOUNTS WHERE NAME="'+req.body.pseudo+'" AND PASSWORD="'+req.body.password+'";';
 		mySqlClient.query(query,function(err,result){
-			err!=='null'?res.send('connexion success'):err;
+			err===null?res.send('connexion success'):res.send(err);
 			console.log(err + result);
 		});
 	}
