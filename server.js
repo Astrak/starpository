@@ -5,8 +5,10 @@ Array.prototype.clean=function(deleteValue){
 var express=require('express'),
 	app=express(),
 	bodyParser=require('body-parser'),
+	cookieParser=require('cookie-parser'),
 	server=require('http').Server(app),
 	io=require('socket.io')(server),
+	session=require('express-session'),
 	sql=require('mysql'),
 	mySqlClient=sql.createConnection({
 		host:process.env.OPENSHIFT_MYSQL_DB_HOST||'127.0.0.1',
@@ -20,10 +22,18 @@ var express=require('express'),
 	serverIpAddress=process.env.OPENSHIFT_NODEJS_IP||'localhost',
 	players=[];
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
+app.use(express.query())
+.use(cookieParser())
+.use(bodyParser.json())
+.use(bodyParser.urlencoded({
   extended: true
-})); 
+}))
+.use(session({
+	name:'authentified',
+	secret:'ssh',
+	resave:false,
+	saveUninitialized:true
+}));
 
 /**** SERVER ****/
 server.listen(serverPort,serverIpAddress,function(){
@@ -33,37 +43,43 @@ server.listen(serverPort,serverIpAddress,function(){
 /**** CONSOLE DEV INFOS ****/
 app.all('*',function(req,res,next){
 	console.log(heure()+req.method+req.path);
-	next();
+	next();		
 })
 
 /**** MYSQL ****/
 .post('/connect',function(req,res){
-	if (req.body.action==='Connexion'){
-		var query='SELECT NAME,PASSWORD FROM accounts WHERE NAME="'+req.body.pseudo+'" AND PASSWORD="'+req.body.password+'";';
+	if(req.body.action==='TestPseudo'){
+		var query='SELECT NAME FROM accounts WHERE NAME="'+req.body.pseudo+'";';
+		mySqlClient.query(query,function(err,result){
+			if(err===null){
+				result[0]?res.send('true'):res.send('false');
+			}else{res.send(err)}
+		});
+	}else if(req.body.action==='Connexion'){
+		var query='SELECT NAME,PASSWORD FROM accounts WHERE NAME="'+req.body.pseudo+'";';
 		mySqlClient.query(query,function(err,result){
 			if(err===null){
 				if(result[0]){
 					if(result[0].PASSWORD===req.body.password){
-						res.send('success')
-					}else{
-						res.send('wrong pw')
-					}
-				}else{
-					res.send('not registered')
-				}
-			}else{
-				res.send(err)
-			}
+						req.session.authentication=true;
+						res.send('connected');
+					}else{res.send('wrong password');}
+				}else{res.send('not registered')}
+			}else{res.send(err)}
 		});
 	}else{
 		var post={name:req.body.pseudo,password:req.body.password,mail:req.body.mail};
 		mySqlClient.query('INSERT INTO accounts SET ?',post,function(err,result){
-			err===null?res.send('subscription success'):res.send('subscription '+err);
+			err===null?res.send('check your mail'):res.send('subscription '+err);
 		});
 	}
 })
+.get('/simulation.html',function(req,res){
+	if(req.session.authentication===true){
+		res.sendFile(__dirname+'/fichiers/simulation.html')
+	}else{res.sendFile(__dirname+'/fichiers/index.html')}
+})
 
-/**** ROUTER ****/
 .use(express.static(__dirname+'/fichiers'));
 
 /**** SOCKETS ****/
@@ -75,7 +91,7 @@ io.on('connection',function(socket){
 			quaternion:{x:0,y:0,z:0,w:0}
 		});
 		socket.emit('newplayer',players)
-	});//wantspawn
+	});
 	setInterval(function(){
 			socket.emit('update',players);
 		},30);
@@ -87,11 +103,11 @@ io.on('connection',function(socket){
 				break;
 			}
 		}
-	});//update
+	});
 	socket.on('disconnect',function(){
 		players.clean(socket.id);
 		socket.broadcast.emit('leaving',socket.id);
-	});//disconnect
+	});
 });
 
 function heure(){

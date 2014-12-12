@@ -10,10 +10,10 @@
 <body>
 	<canvas></canvas>
 	<form method=post action=/connect autocomplete=off>
-		<label for=pseudo>Name</label><input name=pseudo maxlength=10 type=text autofocus>
-		<label for=password>Password</label><input name=password maxlength=10 type=password>
-		<input type=submit name=action value=Connexion>
-		<img src=img/loader.gif />
+		<label for=pseudo>Name</label><input name=pseudo maxlength=15 type=text autofocus>
+		<label for=password>Password</label><input name=password maxlength=15 type=password>
+		<input type=submit name=action value=Connexion><br/>
+		<img src=img/loader.gif /><br/>
 		<p>or subscribe >></p>
 	</form>
 	<footer>
@@ -34,14 +34,24 @@
 		form=document.querySelector('form'),
 		submit=document.querySelector('input[type="submit"]'),
 		inputs=document.querySelectorAll('input'),
-		sub=false,
+		response=document.createTextNode(''),
+		nameInput=document.querySelector('form input'),
+		sub=false,allow=false,		
 		xhr=getXMLHttpRequest();
+	form.insertBefore(response,switchButton);
 	mailLabel.htmlFor='mail';
 	mailLabel.innerHTML='Mail';
 	mailInput.type='email';
 	mailInput.name='mail';
 	mailInput.maxLength='20';
 	switchButton.addEventListener('click',function(){
+		submit.style.display='inline';
+		nameInput.style.backgroundColor='#777';
+		nameInput.value='';
+		response.data='';	
+		if(switchButton.innerHTML==='back'){
+			switchButton.innerHTML==='Connexion';
+		}
 		if(!sub){
 			form.insertBefore(mailLabel,submit);
 			form.insertBefore(mailInput,submit);
@@ -58,23 +68,58 @@
 			switchButton.innerHTML='or subscribe >>';
 		}
 	},false);
+	nameInput.addEventListener('blur',function(){
+		if(nameInput.value!==''){
+			xhr.onreadystatechange=function(){
+				if(xhr.readyState==4&&(xhr.status==200||xhr.status==0)){
+					if(sub===true){
+						if(xhr.responseText==='false'){
+							allow=true;
+							nameInput.style.backgroundColor='#7b7';
+							response.data='';
+						}else{
+							allow=false;
+							response.data="'"+nameInput.value+"' yet exists";
+							nameInput.style.backgroundColor='#b77';
+						}
+					}else{
+						if(xhr.responseText==='false'){
+							response.data='no such user';
+							nameInput.style.backgroundColor='#b77';
+							allow=false;						
+						}else{
+							nameInput.style.backgroundColor='#7b7';
+							response.data='';
+							allow=true;	
+						}
+					}
+				}
+			};
+			xhr.open('POST','/connect',false);
+			xhr.setRequestHeader("Content-Type","application/json;charset=UTF-8");
+			xhr.send(JSON.stringify({pseudo:inputs[0].value,action:'TestPseudo'}));	
+		}
+		
+	},false);
 	submit.addEventListener('click',function(e){
 		e.preventDefault();
-		xhr.onreadystatechange=function(){
-			if(xhr.readyState==4&&(xhr.status==200||xhr.status==0)){
-				document.querySelector('form img').style.display='none';
-				var response=document.createTextNode(xhr.responseText);
-				form.insertBefore(response,form.lastChild);
-			}else if(xhr.readyState<4){
-				submit.style.display='none';
-				document.querySelector('form img').style.display='inline'
-			}
+		if(allow===true){
+			response.data='';
+			xhr.onreadystatechange=function(){
+				if(xhr.readyState==4&&(xhr.status==200||xhr.status==0)){
+					document.querySelector('form img').style.display='none';
+					response.data=xhr.responseText;
+					xhr.responseText==='connected'?document.location.href='simulation.html':response;
+				}else if(xhr.readyState<4){
+					submit.style.display='none';
+					document.querySelector('form img').style.display='inline';
+				}
+			};
+			xhr.open('POST','/connect',false);
+			xhr.setRequestHeader("Content-Type","application/json;charset=UTF-8");
+			xhr.send(JSON.stringify({pseudo:inputs[0].value,password:inputs[1].value,mail:mailInput.value,action:submit.value}));
 		}
-		xhr.open('POST','/connect',false);
-		xhr.setRequestHeader("Content-Type","application/json;charset=UTF-8");
-		xhr.send(JSON.stringify({pseudo:inputs[0].value,password:inputs[1].value,mail:mailInput.value,action:submit.value}));
-
-	})
+	},false);
 	</script>
 </body>
 </html>
